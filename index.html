@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISTEMA DE REGISTRO</title>
+  <style>
+    :root {
+      --bg-dark: #2d1a0e;
+      --accent: #FF6600;
+      --bg-light: #f5efe6;
+      --text-dark: #1a0a02;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      background: #ffffff;
+      max-width: 500px;
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border: 1px solid #e0d0bc;
+    }
+    .header {
+      background: var(--bg-dark);
+      color: white;
+      text-align: center;
+      padding: 24px;
+      border-bottom: 4px solid var(--accent);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+    .header p {
+      margin: 5px 0 0;
+      font-size: 0.85rem;
+      color: #b09070;
+    }
+    form {
+      padding: 28px;
+    }
+    label {
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: var(--bg-dark);
+      display: block;
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px;
+      margin-bottom: 18px;
+      border: 1px solid #ccbcab;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
+    input[type="file"] {
+      padding: 8px;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px;
+      width: 100%;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #e55c00;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>REGISTRO</h1>
+      <p>SISTEMA DE REGISTRO</p>
+    </div>
+
+    <form id="uploadForm">
+      <label for="artista">NOMBRE Y APELLIDO*</label>
+      <input type="text" id="artista" placeholder="Ej: John Doe" required>
+
+      <label for="email">Correo Electrónico *</label>
+      <input type="email" id="email" placeholder="nombre@correo.com" required>
+
+      <label for="telefono">WhatsApp *</label>
+      <input type="tel" id="telefono" placeholder="Ej: 59170000000" required>
+
+      <label for="track">Nombre del Artista *</label>
+      <input type="text" id="track" placeholder="Ej: Neon Lights" required>
+
+      <label for="servicio">Servicio Solicitado *</label>
+      <select id="servicio" required>
+        <option value="">Selecciona un servicio...</option>
+        <option value="Mezcla Profesional">Mezcla Profesional</option>
+        <option value="Masterización">Masterización</option>
+        <option value="Producción Integral">Producción Integral</option>
+        <option value="Edición y Afinación">Edición y Afinación</option>
+      </select>
+
+      <label for="fileInput">Adjuntar Imagen del Proyecto *</label>
+      <input type="file" id="fileInput" accept="image/*" required>
+
+      <label for="referencias">Referencias </label>
+      <input type="text" id="referencias" placeholder="Ej: Sonido limpio estilo Travis Scott">
+
+      <label for="notas">Notas u Observaciones Adicionales</label>
+      <textarea id="notas" rows="3" placeholder="Detalles técnicos adicionales..."></textarea>
+
+      <button type="submit" id="btnSubmit">Enviar Proyecto</button>
+    </form>
+  </div>
+
+  <script>
+    // RECUERDA GENERAR UNA NUEVA IMPLEMENTACIÓN EN APPS SCRIPT Y CAMBIAR ESTA URL SI ES NECESARIO
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwoYosmuqFJQ4vSNhu5LJjyp-0QY1nmLvo2DBq4gjMX3zZg5_wA3BT6PZuvax9oQMQ4Lw/exec";
+
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btnSubmit");
+      btn.disabled = true;
+      btn.innerText = "Procesando Envío...";
+
+      const fileInput = document.getElementById("fileInput");
+      let fileData = "";
+      let fileName = "No adjuntado";
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName = file.name;
+        fileData = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(",")[1]);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      const payload = {
+        artista: document.getElementById("artista").value,
+        email: document.getElementById("email").value,
+        telefono: document.getElementById("telefono").value,
+        track: document.getElementById("track").value,
+        servicio: document.getElementById("servicio").value,
+        fileName: fileName,      
+        fileData: fileData,      
+        referencias: document.getElementById("referencias").value,
+        notas: document.getElementById("notas").value
+      };
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8" // Forzar compatibilidad con modo no-cors
+          },
+          body: JSON.stringify(payload)
+        });
+
+        alert("¡Proyecto e imagen enviados correctamente a WJMR Music!");
+        document.getElementById("uploadForm").reset();
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Error de conexión al enviar el formulario.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Enviar Proyecto";
+      }
+    });
+  </script>
+
+</body>
+</html>
